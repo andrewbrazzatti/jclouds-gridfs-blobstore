@@ -145,6 +145,11 @@ public class GridFSBlobStore implements BlobStore {
     }
 
     @Override
+    public boolean deleteContainerIfEmpty(String container) {
+        return parseGridFSIdentifier(container).dropStoreCollectionsIfEmpty(mongo);
+    }
+
+    @Override
     public void deleteDirectory(String containerName, String name) {
         throw new UnsupportedOperationException("not currently supported by this provider");  // TODO: implement
     }
@@ -179,7 +184,9 @@ public class GridFSBlobStore implements BlobStore {
             return null;
         }
         Blob blob = dbFileToBlob.apply(dbFile);
-        blob.getMetadata().setContainer(container);
+        if (blob != null) {
+            blob.getMetadata().setContainer(container);
+        }
         return blob;
     }
 

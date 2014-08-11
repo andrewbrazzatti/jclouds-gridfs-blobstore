@@ -1,5 +1,6 @@
 package com.commercehub.jclouds.gridfs.blobstore
 
+import com.google.common.io.ByteSource
 import com.mongodb.Mongo
 import com.mongodb.MongoClient
 import org.jclouds.Constants
@@ -20,7 +21,7 @@ class GridFSBlobStoreSpec extends Specification {
     private static final BUCKET = "bk1"
     private static final CONTAINER = "${DB_NAME}/${BUCKET}"
     private static final BLOB_NAME = "JabbaTheHutt"
-    private static final PAYLOAD = "Random data"
+    private static final PAYLOAD = ByteSource.wrap("Random data".bytes)
     private static final PAYLOAD_MD5 = "fd6073b6d8ba3a3c1ab5316b9c79e12b"
     private static final CONTENT_TYPE = "text/plain"
 
@@ -75,6 +76,29 @@ class GridFSBlobStoreSpec extends Specification {
         !blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.NONE)
         blobStore.deleteContainer(CONTAINER)
         !blobStore.containerExists(CONTAINER)
+    }
+
+    def "delete container if empty"() {
+        assert !blobStore.containerExists(CONTAINER)
+
+        when:
+            def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
+            blobStore.putBlob(CONTAINER, payload) == PAYLOAD_MD5
+            def containerDeleted = blobStore.deleteContainerIfEmpty(CONTAINER)
+
+        then:
+            !containerDeleted
+            blobStore.containerExists(CONTAINER)
+            blobStore.blobExists(CONTAINER, BLOB_NAME)
+
+        when:
+            blobStore.removeBlob(CONTAINER, BLOB_NAME)
+            containerDeleted = blobStore.deleteContainerIfEmpty(CONTAINER)
+
+        then:
+            containerDeleted
+            !blobStore.containerExists(CONTAINER)
+            !blobStore.blobExists(CONTAINER, BLOB_NAME)
     }
 
     def "doesn't allow creating containers with public read"() {
@@ -168,8 +192,8 @@ class GridFSBlobStoreSpec extends Specification {
         blob.metadata.contentMetadata.contentDisposition == null
         blob.metadata.contentMetadata.contentEncoding == null
         blob.metadata.contentMetadata.contentLanguage == null
-        blob.metadata.contentMetadata.contentLength == PAYLOAD.length()
-        blob.metadata.contentMetadata.contentMD5 == null
+        blob.metadata.contentMetadata.contentLength == PAYLOAD.size()
+        blob.metadata.contentMetadata.contentMD5AsHashCode == null
         blob.metadata.contentMetadata.contentType == CONTENT_TYPE
         blob.metadata.contentMetadata.expires == null
         blob.metadata.creationDate == null
@@ -187,11 +211,11 @@ class GridFSBlobStoreSpec extends Specification {
         blob.payload.contentMetadata.contentDisposition == null
         blob.payload.contentMetadata.contentEncoding == null
         blob.payload.contentMetadata.contentLanguage == null
-        blob.payload.contentMetadata.contentLength == PAYLOAD.length()
-        blob.payload.contentMetadata.contentMD5 == null
+        blob.payload.contentMetadata.contentLength == PAYLOAD.size()
+        blob.payload.contentMetadata.contentMD5AsHashCode == null
         blob.payload.contentMetadata.contentType == CONTENT_TYPE
         blob.payload.contentMetadata.expires == null
-        blob.payload.input.text == PAYLOAD
+        blob.payload.openStream().bytes == PAYLOAD.read()
 
         cleanup:
         blob.payload.release()

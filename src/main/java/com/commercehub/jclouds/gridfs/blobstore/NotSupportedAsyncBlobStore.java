@@ -81,6 +81,11 @@ class NotSupportedAsyncBlobStore implements AsyncBlobStore {
     }
 
     @Override
+    public ListenableFuture<Boolean> deleteContainerIfEmpty(String container) {
+        throw new UnsupportedOperationException("async is not supported");
+    }
+
+    @Override
     public ListenableFuture<Boolean> directoryExists(String container, String directory) {
         throw new UnsupportedOperationException("async is not supported");
     }

@@ -1,6 +1,7 @@
 package com.commercehub.jclouds.gridfs.blobstore;
 
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.gridfs.GridFS;
 
@@ -37,6 +38,18 @@ class GridFSIdentifier {
         DB db = getDB(mongo);
         db.getCollection(getFilesCollectionName()).drop();
         db.getCollection(getChunksCollectionName()).drop();
+    }
+
+    boolean dropStoreCollectionsIfEmpty(Mongo mongo) {
+        DB db = getDB(mongo);
+        DBCollection filesCollection = db.getCollection(getFilesCollectionName());
+        long count = filesCollection.count();
+        if (count == 0) {
+            filesCollection.drop();
+            db.getCollection(getChunksCollectionName()).drop();
+            return true;
+        }
+        return false;
     }
 
     private DB getDB(Mongo mongo) {

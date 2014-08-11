@@ -1,5 +1,10 @@
 # Changelog
 
+* 1.4.0
+    *   Upgrade jclouds-blobstore dependency to version 1.8.0
+    *   Upgrade mongo-java-driver dependency to 2.12.3
+    *   Upgrade groovy-all test dependency to version 2.3.6
+
 *   1.3.0 (2014-05-15)
     *   Add support for [standard MongoDB connection strings](http://docs.mongodb.org/manual/reference/connection-string/)
     *   Support for non-standard "gridfs://" connection strings is deprecated and may be removed in a future release

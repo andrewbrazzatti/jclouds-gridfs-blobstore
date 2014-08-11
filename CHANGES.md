@@ -1,6 +1,6 @@
 # Changelog
 
-* 1.4.0
+*   1.4.0 (2014-08-11)
     *   Upgrade jclouds-blobstore dependency to version 1.8.0
     *   Upgrade mongo-java-driver dependency to 2.12.3
     *   Upgrade groovy-all test dependency to version 2.3.6

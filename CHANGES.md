@@ -1,5 +1,8 @@
 # Changelog
 
+*   1.4.1 (2014-08-29)
+    *   Fix GridFSBlobStore#getBlob() so that the most recently put version of the file is returned 
+
 *   1.4.0 (2014-08-11)
     *   Upgrade jclouds-blobstore dependency to version 1.8.0
     *   Upgrade mongo-java-driver dependency to 2.12.3

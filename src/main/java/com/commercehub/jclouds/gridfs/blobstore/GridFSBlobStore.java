@@ -2,6 +2,7 @@ package com.commercehub.jclouds.gridfs.blobstore;
 
 import com.google.common.base.Supplier;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -9,6 +10,7 @@ import com.mongodb.ServerAddress;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
+import org.bson.types.ObjectId;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.ContainerNotFoundException;
@@ -178,16 +180,29 @@ public class GridFSBlobStore implements BlobStore {
         )) {
             throw new IllegalArgumentException("Get options are not currently supported by this provider");
         }
+
         GridFS gridFS = identifier.connect(mongo); // TODO: cache
-        GridFSDBFile dbFile = gridFS.findOne(name);
+        GridFSDBFile dbFile = getMostRecentlyUploadedFile(gridFS, name);
         if (dbFile == null) {
             return null;
         }
+
         Blob blob = dbFileToBlob.apply(dbFile);
         if (blob != null) {
             blob.getMetadata().setContainer(container);
         }
         return blob;
+    }
+
+    private static GridFSDBFile getMostRecentlyUploadedFile(GridFS gridFS, String filename) {
+        DBObject queryByFilename = new BasicDBObject("filename", filename);
+        DBObject sortByUploadDateDescending = new BasicDBObject("uploadDate", -1);
+        DBCursor dbCursor = gridFS.getFileList(queryByFilename, sortByUploadDateDescending);
+        return dbCursor.hasNext() ? getGridFSDBFileForDBObject(gridFS, dbCursor.next()) : null;
+    }
+
+    private static GridFSDBFile getGridFSDBFileForDBObject(GridFS gridFS, DBObject dbObject) {
+        return dbObject != null ? gridFS.findOne((ObjectId)dbObject.get("_id")) : null;
     }
 
     @Override

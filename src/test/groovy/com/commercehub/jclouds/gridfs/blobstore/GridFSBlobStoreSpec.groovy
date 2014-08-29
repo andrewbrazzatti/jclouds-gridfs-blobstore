@@ -13,6 +13,7 @@ import org.jclouds.blobstore.options.CreateContainerOptions
 import org.jclouds.blobstore.options.GetOptions
 import org.jclouds.blobstore.options.ListContainerOptions
 import org.jclouds.blobstore.options.PutOptions
+import org.jclouds.io.Payload
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -316,5 +317,33 @@ class GridFSBlobStoreSpec extends Specification {
         blobStore.countBlobs(CONTAINER, ListContainerOptions.NONE)
         then:
         thrown(UnsupportedOperationException)
+    }
+
+    def "gets the most recently put object for a given filename"() {
+        given:
+            def fileName = "file_name_used_for_both_versions"
+            def initialContents = "initial contents"
+            def updatedContents = "updated contents"
+
+        when:
+            def firstBlob = blobStore.blobBuilder(fileName).payload(ByteSource.wrap(initialContents.bytes)).build()
+            blobStore.putBlob(CONTAINER, firstBlob)
+            def retrievedBlob = blobStore.getBlob(CONTAINER, fileName)
+
+        then:
+            initialContents == getPayloadAsString(retrievedBlob.payload)
+
+        when:
+            def secondBlob = blobStore.blobBuilder(fileName).payload(ByteSource.wrap(updatedContents.bytes)).build()
+            blobStore.putBlob(CONTAINER, secondBlob)
+            retrievedBlob = blobStore.getBlob(CONTAINER, fileName)
+
+        then:
+            updatedContents == getPayloadAsString(retrievedBlob.payload)
+
+    }
+
+    private static String getPayloadAsString(Payload payload) {
+        return new String(payload.openStream().bytes)
     }
 }

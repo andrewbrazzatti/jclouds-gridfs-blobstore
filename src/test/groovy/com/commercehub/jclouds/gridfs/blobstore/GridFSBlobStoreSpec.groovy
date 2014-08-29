@@ -42,8 +42,8 @@ class GridFSBlobStoreSpec extends Specification {
         def overrides = new Properties()
         overrides.setProperty(Constants.PROPERTY_ENDPOINT, "mongodb://${host}:${port}");
         context = ContextBuilder.newBuilder("gridfs")
-            .overrides(overrides)
-            .buildView(BlobStoreContext)
+                .overrides(overrides)
+                .buildView(BlobStoreContext)
         blobStore = context.getBlobStore()
     }
 
@@ -61,22 +61,22 @@ class GridFSBlobStoreSpec extends Specification {
         assert !blobStore.containerExists(CONTAINER)
 
         expect:
-        blobStore.createContainerInLocation(null, CONTAINER)
-        blobStore.containerExists(CONTAINER)
-        !blobStore.createContainerInLocation(null, CONTAINER)
-        blobStore.deleteContainer(CONTAINER)
-        !blobStore.containerExists(CONTAINER)
+            blobStore.createContainerInLocation(null, CONTAINER)
+            blobStore.containerExists(CONTAINER)
+            !blobStore.createContainerInLocation(null, CONTAINER)
+            blobStore.deleteContainer(CONTAINER)
+            !blobStore.containerExists(CONTAINER)
     }
 
     def "can create and delete containers with NONE create container options"() {
         assert !blobStore.containerExists(CONTAINER)
 
         expect:
-        blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.NONE)
-        blobStore.containerExists(CONTAINER)
-        !blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.NONE)
-        blobStore.deleteContainer(CONTAINER)
-        !blobStore.containerExists(CONTAINER)
+            blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.NONE)
+            blobStore.containerExists(CONTAINER)
+            !blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.NONE)
+            blobStore.deleteContainer(CONTAINER)
+            !blobStore.containerExists(CONTAINER)
     }
 
     def "delete container if empty"() {
@@ -104,11 +104,11 @@ class GridFSBlobStoreSpec extends Specification {
 
     def "doesn't allow creating containers with public read"() {
         when:
-        blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.Builder.publicRead())
+            blobStore.createContainerInLocation(null, CONTAINER, CreateContainerOptions.Builder.publicRead())
 
         then:
-        def e = thrown(IllegalArgumentException)
-        e.message.contains("public read is not supported")
+            def e = thrown(IllegalArgumentException)
+            e.message.contains("public read is not supported")
     }
 
     def "can create and delete blobs without put options"() {
@@ -119,204 +119,215 @@ class GridFSBlobStoreSpec extends Specification {
         // TODO: test get blob, payloads and metadata
 
         expect:
-        def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
-        blobStore.putBlob(CONTAINER, payload) == PAYLOAD_MD5
-        blobStore.blobExists(CONTAINER, BLOB_NAME)
+            def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
+            blobStore.putBlob(CONTAINER, payload) == PAYLOAD_MD5
+            blobStore.blobExists(CONTAINER, BLOB_NAME)
 
         when:
-        blobStore.removeBlob(CONTAINER, BLOB_NAME)
+            blobStore.removeBlob(CONTAINER, BLOB_NAME)
 
         then:
-        !blobStore.blobExists(CONTAINER, BLOB_NAME)
+            !blobStore.blobExists(CONTAINER, BLOB_NAME)
     }
 
     def "can create and delete blobs with multipart put options"() {
         assert !blobStore.blobExists(CONTAINER, BLOB_NAME)
 
         expect:
-        def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
-        blobStore.putBlob(CONTAINER, payload, PutOptions.Builder.multipart()) == PAYLOAD_MD5
-        blobStore.blobExists(CONTAINER, BLOB_NAME)
+            def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
+            blobStore.putBlob(CONTAINER, payload, PutOptions.Builder.multipart()) == PAYLOAD_MD5
+            blobStore.blobExists(CONTAINER, BLOB_NAME)
 
         when:
-        blobStore.removeBlob(CONTAINER, BLOB_NAME)
+            blobStore.removeBlob(CONTAINER, BLOB_NAME)
 
         then:
-        !blobStore.blobExists(CONTAINER, BLOB_NAME)
+            !blobStore.blobExists(CONTAINER, BLOB_NAME)
     }
 
     def "doesn't allow put with null payload"() {
         when:
-        blobStore.putBlob(CONTAINER, blobStore.blobBuilder(BLOB_NAME).build())
+            blobStore.putBlob(CONTAINER, blobStore.blobBuilder(BLOB_NAME).build())
 
         then:
-        thrown(NullPointerException)
+            thrown(NullPointerException)
     }
 
     def "doesn't allow put with non-multipart"() {
         when:
-        def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
-        blobStore.putBlob(CONTAINER, payload, PutOptions.Builder.multipart(false))
+            def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).build()
+            blobStore.putBlob(CONTAINER, payload, PutOptions.Builder.multipart(false))
 
         then:
-        def e = thrown(IllegalArgumentException)
-        e.message.contains("only multipart is supported")
+            def e = thrown(IllegalArgumentException)
+            e.message.contains("only multipart is supported")
     }
 
     def "get from non-existent container throws exception"() {
         when:
-        blobStore.getBlob("containerDoesNotExist", "blobDoesNotExist")
+            blobStore.getBlob("containerDoesNotExist", "blobDoesNotExist")
 
         then:
-        thrown(ContainerNotFoundException)
+            thrown(ContainerNotFoundException)
     }
 
     def "get non-existent blob returns null"() {
         expect:
-        blobStore.getBlob(CONTAINER, "blobDoesNotExist") == null
+            blobStore.getBlob(CONTAINER, "blobDoesNotExist") == null
     }
 
     def "can retrieve blob without get options"() {
         when:
-        def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).contentType(CONTENT_TYPE)
-                .userMetadata([user: "joe", type: "profilePicture"]).build()
-        blobStore.putBlob(CONTAINER, payload)
-        def blob = blobStore.getBlob(CONTAINER, BLOB_NAME)
+            def payload = blobStore.blobBuilder(BLOB_NAME).payload(PAYLOAD).contentType(CONTENT_TYPE)
+                    .userMetadata([user: "joe", type: "profilePicture"]).build()
+            blobStore.putBlob(CONTAINER, payload)
+            def blob = blobStore.getBlob(CONTAINER, BLOB_NAME)
 
         then:
-        blob != null
+            blob != null
 
-        blob.allHeaders != null && blob.allHeaders.isEmpty()
-        blob.metadata != null
-        blob.metadata.container == CONTAINER
-        blob.metadata.contentMetadata != null
-        blob.metadata.contentMetadata.contentDisposition == null
-        blob.metadata.contentMetadata.contentEncoding == null
-        blob.metadata.contentMetadata.contentLanguage == null
-        blob.metadata.contentMetadata.contentLength == PAYLOAD.size()
-        blob.metadata.contentMetadata.contentMD5AsHashCode == null
-        blob.metadata.contentMetadata.contentType == CONTENT_TYPE
-        blob.metadata.contentMetadata.expires == null
-        blob.metadata.creationDate == null
-        blob.metadata.ETag == PAYLOAD_MD5
-        blob.metadata.lastModified != null
-        blob.metadata.name == BLOB_NAME
-        blob.metadata.providerId == null
-        blob.metadata.publicUri == null
-        blob.metadata.type == StorageType.BLOB
-        blob.metadata.uri == null
-        blob.metadata.userMetadata == [user: "joe", type: "profilePicture"]
+            blob.allHeaders != null && blob.allHeaders.isEmpty()
+            blob.metadata != null
+            blob.metadata.container == CONTAINER
+            blob.metadata.contentMetadata != null
+            blob.metadata.contentMetadata.contentDisposition == null
+            blob.metadata.contentMetadata.contentEncoding == null
+            blob.metadata.contentMetadata.contentLanguage == null
+            blob.metadata.contentMetadata.contentLength == PAYLOAD.size()
+            blob.metadata.contentMetadata.contentMD5AsHashCode == null
+            blob.metadata.contentMetadata.contentType == CONTENT_TYPE
+            blob.metadata.contentMetadata.expires == null
+            blob.metadata.creationDate == null
+            blob.metadata.ETag == PAYLOAD_MD5
+            blob.metadata.lastModified != null
+            blob.metadata.name == BLOB_NAME
+            blob.metadata.providerId == null
+            blob.metadata.publicUri == null
+            blob.metadata.type == StorageType.BLOB
+            blob.metadata.uri == null
+            blob.metadata.userMetadata == [user: "joe", type: "profilePicture"]
 
-        blob.payload != null
-        blob.payload.contentMetadata != null
-        blob.payload.contentMetadata.contentDisposition == null
-        blob.payload.contentMetadata.contentEncoding == null
-        blob.payload.contentMetadata.contentLanguage == null
-        blob.payload.contentMetadata.contentLength == PAYLOAD.size()
-        blob.payload.contentMetadata.contentMD5AsHashCode == null
-        blob.payload.contentMetadata.contentType == CONTENT_TYPE
-        blob.payload.contentMetadata.expires == null
-        blob.payload.openStream().bytes == PAYLOAD.read()
+            blob.payload != null
+            blob.payload.contentMetadata != null
+            blob.payload.contentMetadata.contentDisposition == null
+            blob.payload.contentMetadata.contentEncoding == null
+            blob.payload.contentMetadata.contentLanguage == null
+            blob.payload.contentMetadata.contentLength == PAYLOAD.size()
+            blob.payload.contentMetadata.contentMD5AsHashCode == null
+            blob.payload.contentMetadata.contentType == CONTENT_TYPE
+            blob.payload.contentMetadata.expires == null
+            blob.payload.openStream().bytes == PAYLOAD.read()
 
         cleanup:
-        blob.payload.release()
+            blob.payload.release()
     }
 
     def "get options not supported"() {
         when:
-        blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifETagDoesntMatch(PAYLOAD_MD5))
+            blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifETagDoesntMatch(PAYLOAD_MD5))
 
         then:
-        thrown(IllegalArgumentException)
+            thrown(IllegalArgumentException)
 
         when:
-        blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifETagMatches(PAYLOAD_MD5))
+            blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifETagMatches(PAYLOAD_MD5))
 
         then:
-        thrown(IllegalArgumentException)
+            thrown(IllegalArgumentException)
 
         when:
-        blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifModifiedSince(new Date()))
+            blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifModifiedSince(new Date()))
 
         then:
-        thrown(IllegalArgumentException)
+            thrown(IllegalArgumentException)
 
         when:
-        blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifUnmodifiedSince(new Date()))
+            blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.ifUnmodifiedSince(new Date()))
 
         then:
-        thrown(IllegalArgumentException)
+            thrown(IllegalArgumentException)
 
         when:
-        blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.range(0, 100))
+            blobStore.getBlob(CONTAINER, BLOB_NAME, GetOptions.Builder.range(0, 100))
 
         then:
-        thrown(IllegalArgumentException)
+            thrown(IllegalArgumentException)
     }
 
     def "list not supported"() {
         when:
-        blobStore.list()
+            blobStore.list()
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.list(CONTAINER)
+            blobStore.list(CONTAINER)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.list(CONTAINER, ListContainerOptions.NONE)
+            blobStore.list(CONTAINER, ListContainerOptions.NONE)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
     }
 
     def "clearContainer not supported"() {
         when:
-        blobStore.clearContainer(CONTAINER)
+            blobStore.clearContainer(CONTAINER)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.clearContainer(CONTAINER, ListContainerOptions.NONE)
+            blobStore.clearContainer(CONTAINER, ListContainerOptions.NONE)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
     }
 
     def "directory operations not supported"() {
         when:
-        blobStore.createDirectory(CONTAINER, "myDirectory")
+            blobStore.createDirectory(CONTAINER, "myDirectory")
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.deleteDirectory(CONTAINER, "myDirectory")
+            blobStore.deleteDirectory(CONTAINER, "myDirectory")
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.directoryExists(CONTAINER, "myDirectory")
+            blobStore.directoryExists(CONTAINER, "myDirectory")
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
     }
 
     def "blobMetadata not supported"() {
         when:
-        blobStore.blobMetadata(CONTAINER, BLOB_NAME)
+            blobStore.blobMetadata(CONTAINER, BLOB_NAME)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
     }
 
     def "countBlobs not supported"() {
         when:
-        blobStore.countBlobs(CONTAINER)
+            blobStore.countBlobs(CONTAINER)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
 
         when:
-        blobStore.countBlobs(CONTAINER, ListContainerOptions.NONE)
+            blobStore.countBlobs(CONTAINER, ListContainerOptions.NONE)
+
         then:
-        thrown(UnsupportedOperationException)
+            thrown(UnsupportedOperationException)
     }
 
     def "gets the most recently put object for a given filename"() {

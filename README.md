@@ -1,3 +1,7 @@
+# THIS PROJECT IS DEPRECATED
+jclouds-gridfs-blobstore is no longer maintained, and **this** repository will be removed from GitHub on or after Sunday, January 22, 2017. Published release artifacts will **continue** to be available indefinitely via
+[Bintray JCenter](https://bintray.com/bintray/jcenter?filterByPkgName=jclouds-gridfs-blobstore).
+
 # Overview
 
 A JClouds BlobStore provider backed by MongoDB's GridFS.  Not all capabilities are supported, but there should be
